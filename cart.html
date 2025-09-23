@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Корзина</title>
+<style>
+:root {
+  --bg:#0f1220; --card:#171a2a; --text:#e8ebff; --muted:#9aa3c7;
+  --accent:#6ea8ff; --accent-2:#7b6cff;
+  --shadow:0 10px 30px rgba(0,0,0,0.25); --radius:18px;
+}
+body{margin:0; font-family:sans-serif; background:var(--bg); color:var(--text);}
+.wrap{max-width:1000px; margin:0 auto; padding:16px;}
+h1{font-size:22px; margin-bottom:20px;}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
+}
+@media (min-width:768px){.grid{grid-template-columns:repeat(3,1fr);}}
+@media (min-width:1024px){.grid{grid-template-columns:repeat(4,1fr);}}
+@media (min-width:1400px){.grid{grid-template-columns:repeat(5,1fr);}}
+.card{
+  background:var(--card); border-radius:var(--radius); padding:14px;
+  box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px;
+  text-align:center; align-items:center; position:relative; overflow:hidden;
+}
+.card.hit{border:2px solid orange;}
+.card.discount{border:2px solid #22c55e;}
+.ribbon {
+  position: absolute;
+  top: 12px; right: -34px;
+  width: 110px; height: 24px;
+  background: orange; color: #fff; font-weight: bold; text-align: center;
+  line-height: 24px; transform: rotate(45deg); z-index:10;
+  font-size: 12px; box-shadow:0 2px 5px rgba(0,0,0,0.3);
+}
+.ribbon.discount{background:#22c55e;}
+.emoji-box{aspect-ratio:1/1; border-radius:14px; background:#1e2235; display:flex; justify-content:center; align-items:center; width:100%; overflow:hidden; position:relative;}
+.emoji-box img{max-width:80%; max-height:80%; display:block; margin:auto;}
+.name{font-size:15px; font-weight:600;}
+.price{font-size:14px;}
+.old-price{text-decoration:line-through; color:var(--muted); margin-right:6px;}
+.new-price{color:#22c55e; font-weight:700;}
+.total{margin-top:20px; font-size:18px; font-weight:700; text-align:center;}
+.btn{margin-top:8px; padding:10px 14px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:white; border:none; font-weight:700; cursor:pointer; box-shadow:var(--shadow); transition:0.2s;}
+.btn:hover{opacity:0.9;}
+.controls{margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;}
+.controls .btn{flex:1; min-width:120px;}
+.options{margin-top:20px; background:var(--card); padding:16px; border-radius:var(--radius); box-shadow:var(--shadow);}
+.options h2{font-size:18px; margin-bottom:10px;}
+.option-group{margin-bottom:14px; display:flex; flex-direction:column; gap:6px;}
+.option-group label{font-size:14px; color:var(--muted);}
+input[type="color"], input[type="text"]{padding:8px; border-radius:10px; border:none; outline:none; background:#1e2235; color:var(--text); font-size:14px;}
+input[type="text"]{width:100%;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Корзина</h1>
+  <div id="grid" class="grid"></div>
+  <div class="total" id="total"></div>
+
+  <div class="options">
+    <h2>Персонализация заказа</h2>
+    <div class="option-group">
+      <label for="fillColor">Цвет заливки:</label>
+      <input type="color" id="fillColor" value="#000000">
+    </div>
+    <div class="option-group">
+      <label for="strokeColor">Цвет обводки:</label>
+      <input type="color" id="strokeColor" value="#ffffff">
+    </div>
+    <div class="option-group">
+      <label for="nickname">Ваш ник:</label>
+      <input type="text" id="nickname" placeholder="Надпись на эмодзи">
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" onclick="clearCart()">Очистить корзину</button>
+    <a href="index.html" class="btn" style="text-align:center; display:block;">⬅ Назад</a>
+    <button class="btn" onclick="sendToTelegram()">Отправить заказ</button>
+  </div>
+</div>
+
+<script>
+const hits=["HeartArms","TopSign","Card","PlushPepe"];
+const discounts=["Rock","Cube1","Flag1"];
+const PRICE=1;
+
+function getCart(){ return JSON.parse(localStorage.getItem("cart")||"[]"); }
+function saveCart(cart){ localStorage.setItem("cart", JSON.stringify(cart)); render(); }
+function removeItem(id){ saveCart(getCart().filter(c=>c.item.id!==id)); }
+function clearCart(){ saveCart([]); }
+
+function render(){
+  const cart=getCart();
+  const grid=document.getElementById("grid");
+  let total=0;
+  grid.innerHTML=cart.map(c=>{
+    const item=c.item;
+    const isHit=hits.includes(item.id);
+    const isDiscount=discounts.includes(item.id);
+    const ribbon=isHit?'<div class="ribbon">ХИТ</div>':isDiscount?'<div class="ribbon discount">СКИДКА</div>':"";
+    total+=c.price;
+    const priceHTML=isDiscount?`<div class="price"><span class="old-price">$${PRICE.toFixed(2)}</span><span class="new-price">$${c.price.toFixed(2)}</span></div>`:`<div class="price">$${c.price.toFixed(2)}</div>`;
+    return `
+      <div class="card ${isHit?"hit":""} ${isDiscount?"discount":""}">
+        ${ribbon}
+        <div class="emoji-box"><img src="${item.id}.png" alt="${item.name}"></div>
+        <div class="name">${item.name}</div>
+        ${priceHTML}
+        <button class="btn" onclick="removeItem('${item.id}')">Удалить</button>
+      </div>
+    `;
+  }).join('');
+  document.getElementById("total").textContent="Итого: $"+total.toFixed(2);
+}
+
+function sendToTelegram(){
+  const cart=getCart();
+  if(cart.length===0){ alert("Корзина пуста"); return; }
+  const fill=document.getElementById("fillColor").value;
+  const stroke=document.getElementById("strokeColor").value;
+  const nick=document.getElementById("nickname").value||"—";
+  let msg="🛒 Новый заказ:\n\n";
+  cart.forEach(c=>{ msg+=`• ${c.item.name} — $${c.price.toFixed(2)}\n`; });
+  msg+="\n🎨 Заливка: "+fill+"\n";
+  msg+="🖊 Обводка: "+stroke+"\n";
+  msg+="👤 Ник: "+nick+"\n";
+  msg+="\n💰 Итог: $"+cart.reduce((s,c)=>s+c.price,0).toFixed(2);
+  const url="https://t.me/treyzq?text="+encodeURIComponent(msg);
+  window.open(url,"_blank");
+}
+
+render();
+</script>
+</body>
+</html>

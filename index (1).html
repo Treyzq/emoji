@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Treyz Emoji</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+<style>
+:root {
+  --bg:#0f1220; --card:#171a2a; --text:#e8ebff; --muted:#9aa3c7;
+  --accent:#6ea8ff; --accent-2:#7b6cff; --btn:#2a2f45; --btn-hover:#343a55;
+  --shadow:0 10px 30px rgba(0,0,0,0.25); --radius:18px;
+}
+body{margin:0; font-family:sans-serif; background:var(--bg); color:var(--text);}
+.wrap{max-width:1000px; margin:0 auto; padding:16px;}
+header{display:flex; justify-content:space-between; align-items:center; padding:16px;}
+h1{font-size:20px;}
+.search-box{margin:0 0 16px;}
+.search-box input{
+  width:100%; max-width:100%;
+  padding:10px 14px; border-radius:12px; border:none; outline:none;
+  background:#1e2235; color:var(--text); font-size:14px;
+  box-shadow:var(--shadow) inset; box-sizing:border-box;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:16px;
+}
+@media (min-width:768px){.grid{grid-template-columns:repeat(3,1fr);}}
+@media (min-width:1024px){.grid{grid-template-columns:repeat(4,1fr);}}
+@media (min-width:1400px){.grid{grid-template-columns:repeat(5,1fr);}}
+.card{
+  background:var(--card); border-radius:var(--radius); padding:14px;
+  box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px;
+  text-align:center; align-items:center; position:relative; overflow:hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
+}
+.card:hover{transform: scale(1.05); box-shadow: 0 15px 35px rgba(0,0,0,0.35);}
+.card.added{border:2px solid var(--accent);}
+.card.hit{border:2px solid orange;}
+.card.discount{border:2px solid #22c55e;}
+.ribbon {
+  position: absolute;
+  top: 12px; right: -34px;
+  width: 110px; height: 20px;
+  background: orange; color: #fff; font-weight: bold; text-align: center;
+  line-height: 20px; transform: rotate(45deg); z-index:10;
+  font-size: 11px; box-shadow:0 2px 5px rgba(0,0,0,0.3);
+}
+.ribbon.discount{background:#22c55e;}
+.emoji-box{
+  aspect-ratio:1/1; border-radius:14px; background:#1e2235;
+  display:flex; justify-content:center; align-items:center; width:100%; overflow:hidden; position:relative;
+}
+.emoji-box img{max-width:80%; max-height:80%; display:block; margin:auto;}
+.anim-box{position:absolute; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; pointer-events:none; display:none;}
+.anim-box svg{width:80% !important; height:80% !important;}
+.name{font-size:15px; font-weight:600;}
+.btn{margin-top:8px; padding:10px 12px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:white; border:none; font-weight:700; cursor:pointer; box-shadow:var(--shadow);}
+.floating-cart{
+  position:fixed; bottom:20px; right:20px; background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff; border:none; border-radius:50%; width:60px; height:60px;
+  display:flex; justify-content:center; align-items:center; font-size:22px; font-weight:700;
+  box-shadow:var(--shadow); cursor:pointer; z-index:999; text-decoration:none;
+}
+.floating-cart span{font-size:14px; background:#ff4444; border-radius:50%; padding:2px 6px; margin-left:4px;}
+.floating-cart:hover{opacity:0.9;}
+.notice{margin-top:24px; font-size:14px; color:var(--muted);}
+.notice a{color:var(--accent);}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <h1>Treyz Emoji</h1>
+</header>
+
+<main class="wrap">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="🔍 Поиск эмодзи по названию...">
+  </div>
+  <div class="grid" id="grid"></div>
+  <p class="notice">
+    Важно: не нашли то, что искали? На сайте представлен не весь каталог, также возможно создание многих других эмодзи. 
+    Чтобы узнать могу ли я сделать тот или иной эмодзи пишите в лс: 
+    <a href="https://t.me/treyzq" target="_blank">@treyzq</a>
+  </p>
+</main>
+
+<a href="cart.html" class="floating-cart" id="cartBtn">🛒<span id="cartCount">0</span></a>
+
+<script>
+const items = [
+  {id:"Flag1", name:"Флаг"},
+  {id:"Phone", name:"Телефон"},
+  {id:"Card", name:"Карточка"},
+  {id:"Case", name:"Кейс"},
+  {id:"HeartArms", name:"Сердце"},
+  {id:"TopSign", name:"ТОП"},
+  {id:"Cube1", name:"Лого куб"},
+  {id:"Arms", name:"Рукопожатие"},
+  {id:"Muscle", name:"Бицепс"},
+  {id:"Fire", name:"Огонь"},
+  {id:"PlushPepe", name:"Пепе"},
+  {id:"Cap", name:"Кепка"},
+  {id:"SignetRing", name:"Кольцо"},
+  {id:"Rock", name:"Рок"},
+  {id:"Mask", name:"Маска"},
+  {id:"Demon", name:"Демон"},
+  {id:"Coin1", name:"Монетка"},
+  {id:"Button", name:"Кнопка"},
+  {id:"Code", name:"Код"},
+  {id:"MoneyAway", name:"Деньги"},
+  {id:"MoneyFace", name:"Лицо"},
+  {id:"Surfer", name:"Сёрфер"},
+  {id:"Wallet", name:"Кошелёк"},
+  {id:"PepeSign", name:"Пепе табличка"}
+];
+
+const hits = ["HeartArms","TopSign","PlushPepe","Card"];
+const discounts = ["Rock","Cube1","Flag1"];
+const PRICE = 1;
+const animations = {};
+
+function getCart(){ return JSON.parse(localStorage.getItem("cart")||"[]"); }
+function saveCart(cart){ localStorage.setItem("cart", JSON.stringify(cart)); updateCartCount(); }
+
+function toggleCart(item){
+  let cart=getCart();
+  const exists=cart.find(c=>c.item.id===item.id);
+  if(exists){ cart=cart.filter(c=>c.item.id!==item.id); }
+  else{
+    let price = discounts.includes(item.id)?PRICE*0.8:PRICE;
+    cart.push({item, price});
+  }
+  saveCart(cart);
+  render();
+}
+
+function updateCartCount(){
+  document.getElementById("cartCount").textContent=getCart().length;
+}
+
+function render(){
+  const cart=getCart();
+  const query=document.getElementById("searchInput").value.toLowerCase();
+  const filteredItems=items.filter(it=>it.name.toLowerCase().includes(query));
+
+  const sortedItems = [...filteredItems].sort((a,b)=>{
+    const aScore=(hits.includes(a.id)?2:0)+(discounts.includes(a.id)?1:0);
+    const bScore=(hits.includes(b.id)?2:0)+(discounts.includes(b.id)?1:0);
+    return bScore - aScore;
+  });
+
+  document.getElementById("grid").innerHTML = sortedItems.map(item=>{
+    const inCart = cart.some(c=>c.item.id===item.id);
+    const hitClass = hits.includes(item.id)?"hit":"";
+    const discountClass = discounts.includes(item.id)?"discount":"";
+    const ribbon = hits.includes(item.id)?'<div class="ribbon">ХИТ</div>':discounts.includes(item.id)?'<div class="ribbon discount">СКИДКА</div>':"";
+    return `
+      <div class="card ${hitClass} ${discountClass}">
+        ${ribbon}
+        <div class="emoji-box" id="box-${item.id}">
+          <img src="${item.id}.png" alt="${item.name}">
+          <div class="anim-box" id="anim-${item.id}"></div>
+        </div>
+        <div class="name">${item.name}</div>
+        <button class="btn" onclick='toggleCart(${JSON.stringify(item)})'>
+          ${inCart?"Убрать":"Добавить"}
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  preloadAnimations();
+  updateCartCount();
+}
+
+function preloadAnimations(){
+  items.forEach(item=>{
+    const animBox=document.getElementById(`anim-${item.id}`);
+    if(animBox && !animations[item.id]){
+      const anim = lottie.loadAnimation({
+        container: animBox,
+        renderer: "svg",
+        loop:false,
+        autoplay:false,
+        path:item.id+".json"
+      });
+      animBox.style.display="none";
+      animations[item.id]=anim;
+
+      anim.addEventListener("complete",()=>{
+        animBox.style.display="none";
+        const img = animBox.parentElement.querySelector("img");
+        if(img) img.style.display="block";
+        animBox.dataset.playing="false";
+      });
+
+      const box=document.getElementById("box-"+item.id);
+      const img=box.querySelector("img");
+      ["mouseenter","click","touchstart"].forEach(ev=>{
+        box.addEventListener(ev,()=>{
+          if(animBox.dataset.playing==="true") return;
+          animBox.dataset.playing="true";
+          img.style.display="none";
+          animBox.style.display="flex";
+          anim.goToAndPlay(0,true);
+        });
+      });
+    }
+  });
+}
+
+document.getElementById("searchInput").addEventListener("input",render);
+
+render();
+</script>
+</body>
+</html>
